@@ -32,7 +32,7 @@ function addMember() {
 
 
     }])
-    .then(function({name, role, id, email}){
+    .then(function({name, role, id, email}) {
         let roleInfo = "";
         if (role === "intern") {
             roleInfo = "name of school";
@@ -42,17 +42,17 @@ function addMember() {
             roleInfo = "office number"
         }
         inquirer.prompt([{
-            message: `enter team member's ${roleInfo}`,
+            message: `Enter team member's ${roleInfo}`,
             name: "roleInfo"
         },
         {
             type: "list",
             message: "Would you like to add any more members?",
-            choises: ["yes","no"],
+            choices: ["yes","no"],
 
             name: "moreMembers"
         }])
-        .then(function({roleInfo, moreMembers}){
+        .then(function({roleInfo, moreMembers}) {
             let newMember;
             if (role === "engineer") {
                 newMember = new engineer(name, id, email, roleInfo);
@@ -62,9 +62,12 @@ function addMember() {
                 newMember = new manager(name, id, email, roleInfo);
             }
             employees.push(newMember);
+            console.log(newMember);
             genHtml(newMember)
+            console.log(genHtml)
+            console.log("second new member" + newMember)
             .then(function(){
-                if (moreMembers === "yes") {
+                if (moreMembers === 0) {
                     addMember();
                 }else{
                     finishHtml();
@@ -72,6 +75,7 @@ function addMember() {
             });
         });
     });
+}
 
     function genHtml() {
         const html = `<!DOCTYPE html>
@@ -89,5 +93,93 @@ function addMember() {
             </nav>
             <div class="container">
                 <div class="row">`;
+        
+                fs.writeFile("./output/team.html", html, function(err){
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+            console.log("start");
     }
-}
+
+    function addHtml(member) {
+        return new Promise(function(resolve, reject){
+            const name = member.getName();
+            const role = member.getRole();
+            const id = member.getId();
+            const email = member.getEmail();
+            let data = "";
+            if (role === "engineer") {
+                const gitHub = member.getGithub();
+                data = `<div class="col-6">
+                <div class="card mx-auto mb-3" style="width: 18rem">
+                <h5 class="card-header">${name}<br /><br />Engineer</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">ID: ${id}</li>
+                    <li class="list-group-item">Email Address: ${email}</li>
+                    <li class="list-group-item">GitHub: ${gitHub}</li>
+                </ul>
+                </div>
+            </div>`;
+            } else if (role === "intern") {
+                const school = member.getSchool();
+                data = `<div class="col-6">
+                <div class="card mx-auto mb-3" style="width: 18rem">
+                <h5 class="card-header">${name}<br /><br />Intern</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">ID: ${id}</li>
+                    <li class="list-group-item">Email Address: ${email}</li>
+                    <li class="list-group-item">School: ${school}</li>
+                </ul>
+                </div>
+            </div>`;
+            } else {
+                const officePhone = member.getOfficeNumber();
+                data = `<div class="col-6">
+                <div class="card mx-auto mb-3" style="width: 18rem">
+                <h5 class="card-header">${name}<br /><br />Manager</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">ID: ${id}</li>
+                    <li class="list-group-item">Email Address: ${email}</li>
+                    <li class="list-group-item">Office Phone: ${officePhone}</li>
+                </ul>
+                </div>
+            </div>`
+            }
+            console.log("adding team member");
+            fs.appendFile("./output/team.html", data, function (err) {
+                if (err) {
+                    return reject(err);
+                };
+                return resolve();
+            });
+        }); 
+        
+
+        
+
+
+    }
+
+    function finishHtml() {
+        const html = ` </div>
+        </div>
+        
+    </body>
+    </html>`;
+    
+        fs.appendFile("./output/team.html", html, function (err) {
+            if (err) {
+                console.log(err);
+            };
+        });
+        console.log("end");
+    }
+    
+    // addMember();
+    // startHtml();
+    // addHtml("hi")
+    // .then(function() {
+    // finishHtml();
+    // });
+    init();
